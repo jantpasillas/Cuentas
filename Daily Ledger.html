@@ -1,0 +1,1201 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Daily Ledger</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centered column. Header with brand + section links, then one visible section at a time.
+   Palette: cool paper greys with a deep green-teal accent. Type: IBM Plex Sans for text, Plex Mono for figures and dates. */
+:root {
+  --bg: #f1f4f2;
+  --surface: #ffffff;
+  --surface-2: #e9eeeb;
+  --ink: #14201b;
+  --muted: #566660;
+  --line: #d6dfdb;
+  --line-strong: #b4c2bc;
+  --accent: #0b6b56;
+  --accent-ink: #ffffff;
+  --accent-soft: #d8eee7;
+  --danger: #b3261e;
+  --danger-soft: #f9e0de;
+  --ok: #17703f;
+  --ok-soft: #dcf0e4;
+  --warn: #7a4f00;
+  --warn-soft: #fbefd2;
+  --focus: #1b6fd8;
+  --shadow: 0 10px 40px rgba(20, 32, 27, .22);
+  --font-text: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-num: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1512; --surface: #161f1b; --surface-2: #1f2b26; --ink: #e5eeea; --muted: #92a49c;
+    --line: #27352f; --line-strong: #3b4d45; --accent: #4cc6a4; --accent-ink: #06241b; --accent-soft: #17352c;
+    --danger: #ff8f86; --danger-soft: #3a1d1b; --ok: #6fd49a; --ok-soft: #173424; --warn: #f0c16a; --warn-soft: #3a2d10;
+    --focus: #7db3ff; --shadow: 0 10px 40px rgba(0, 0, 0, .55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1512; --surface: #161f1b; --surface-2: #1f2b26; --ink: #e5eeea; --muted: #92a49c;
+  --line: #27352f; --line-strong: #3b4d45; --accent: #4cc6a4; --accent-ink: #06241b; --accent-soft: #17352c;
+  --danger: #ff8f86; --danger-soft: #3a1d1b; --ok: #6fd49a; --ok-soft: #173424; --warn: #f0c16a; --warn-soft: #3a2d10;
+  --focus: #7db3ff; --shadow: 0 10px 40px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 20px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3, p { margin: 0; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.app { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.mark { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-num); font-weight: 500; font-size: 18px; }
+.brand h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.01em; }
+.brand small { display: block; color: var(--muted); font-size: .75rem; margin-top: -2px; }
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 12px; }
+.tabs a { padding: .5rem 1rem; border-radius: 9px; color: var(--muted); text-decoration: none; font-weight: 500; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; }
+.tabs a:hover { color: var(--ink); }
+.tabs a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+@media (max-width: 520px) { .tabs { width: 100%; } .tabs a { flex: 1; padding-inline: .5rem; } }
+
+/* Shared pieces */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.pad { padding: 20px; }
+.view { display: flex; flex-direction: column; gap: 20px; }
+.h2 { font-size: 1.0625rem; font-weight: 600; }
+.sub { color: var(--muted); font-size: .875rem; }
+.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 16px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); font-size: .875rem; border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--surface)); }
+.banner.danger { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, var(--surface)); }
+.banner .btn { margin-left: auto; }
+
+.btn { min-height: 42px; padding: .5rem 1rem; border-radius: 9px; border: 1px solid var(--line-strong); background: var(--surface); cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
+.btn:hover { background: var(--surface-2); }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); background: var(--accent); }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+:root[data-theme="dark"] .btn.danger { color: #2a0705; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.danger { color: #2a0705; } }
+.btn.small { min-height: 36px; padding: .25rem .75rem; font-size: .875rem; }
+.lnk { background: none; border: 0; color: var(--accent); padding: .35rem .5rem; border-radius: 6px; cursor: pointer; min-height: 34px; font-weight: 500; }
+.lnk:hover { background: var(--accent-soft); }
+.lnk.danger { color: var(--danger); }
+.lnk.danger:hover { background: var(--danger-soft); }
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label, .lbl { font-size: .8125rem; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+.inp { width: 100%; min-height: 46px; padding: .5rem .8rem; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); font-size: 16px; }
+select.inp { appearance: auto; }
+.inp[aria-invalid="true"] { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 6%, var(--surface)); }
+.err { color: var(--danger); font-size: .8125rem; min-height: 0; }
+.err:empty { display: none; }
+.hint { color: var(--muted); font-size: .8125rem; }
+.money { position: relative; }
+.money > span { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-family: var(--font-num); pointer-events: none; }
+.money .inp { padding-left: 1.9rem; font-family: var(--font-num); font-size: 1.125rem; }
+.row { display: flex; gap: 8px; align-items: stretch; }
+.row > .inp { flex: 1; min-width: 0; }
+
+.pill { display: inline-flex; align-items: center; gap: .4rem; padding: .12rem .65rem; border-radius: 999px; font-size: .8125rem; font-weight: 500; background: var(--surface-2); background: color-mix(in srgb, var(--c) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 42%, var(--surface)); white-space: nowrap; }
+.pill i { width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); flex: none; }
+.tag { display: inline-block; margin-left: .5rem; padding: 0 .45rem; border-radius: 5px; font-size: .6875rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; background: var(--warn-soft); color: var(--warn); vertical-align: middle; }
+.badge { display: inline-block; padding: .05rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 600; background: var(--accent-soft); color: var(--accent); }
+
+/* Expenses view */
+.cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 20px; align-items: start; }
+@media (max-width: 820px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.form { display: flex; flex-direction: column; gap: 16px; }
+.form .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 460px) { .form .two { grid-template-columns: minmax(0, 1fr); } }
+.newbox { display: grid; grid-template-columns: minmax(0, 1fr) 7.5rem; gap: 10px; padding: 14px; border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--surface-2); }
+.newbox .actions { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
+.latest { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.latest li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.latest li:last-child { border-bottom: 0; }
+.latest .d { overflow-wrap: anywhere; font-weight: 500; }
+.latest .a { text-align: right; font-weight: 500; }
+.latest .m { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: .8125rem; }
+.empty { padding: 28px 12px; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.empty strong { color: var(--ink); font-weight: 600; }
+
+/* Summary */
+.periodbar { display: flex; flex-direction: column; gap: 14px; }
+.pnav { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.pnav .arrow { width: 44px; padding: 0; font-size: 1.25rem; }
+.ptitle { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 9rem; justify-content: center; }
+.ptitle h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.01em; }
+.ranges { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .875rem; }
+.ranges li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.ranges .num { color: var(--ink); }
+.total { display: flex; flex-wrap: wrap; gap: 8px 32px; align-items: flex-end; justify-content: space-between; }
+.total .big { display: block; font-size: clamp(1.9rem, 7vw, 2.75rem); font-weight: 500; letter-spacing: -.02em; line-height: 1.1; margin-top: 4px; overflow-wrap: anywhere; }
+.total .cnt { text-align: right; }
+.total .cnt b { display: block; font-size: 1.5rem; font-weight: 500; }
+.share { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; background: var(--surface-2); margin-top: 18px; }
+.share span { min-width: 3px; }
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-top: 18px; }
+.mcard { text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; min-width: 0; }
+.mcard:hover { border-color: var(--line-strong); }
+.mcard[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.mcard.zero .mamt { color: var(--muted); }
+.mname { display: flex; align-items: center; gap: .5rem; font-weight: 500; }
+.mname i { width: .65rem; height: .65rem; border-radius: 50%; background: var(--c); flex: none; }
+.mamt { font-size: 1.25rem; font-weight: 500; margin-top: 4px; overflow-wrap: anywhere; }
+.mmeta { color: var(--muted); font-size: .8125rem; }
+.tablehead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.sortbar { display: none; gap: 8px; align-items: center; }
+.sortbar .inp { min-height: 38px; padding: .25rem .6rem; width: auto; }
+.tablewrap { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl th, .tbl td { padding: .7rem .9rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl thead th { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--surface-2); white-space: nowrap; padding-block: .45rem; }
+.tbl th:first-child, .tbl td:first-child { padding-left: 20px; }
+.tbl th:last-child, .tbl td:last-child { padding-right: 14px; }
+.tbl .c-amt { text-align: right; white-space: nowrap; }
+.tbl .c-date { white-space: nowrap; }
+.tbl .c-desc { overflow-wrap: anywhere; }
+.tbl .c-act { text-align: right; white-space: nowrap; }
+.tbl tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 55%, var(--surface)); }
+.tbl tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface-2); }
+.thbtn { background: none; border: 0; padding: .35rem 0; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; display: inline-flex; gap: .35rem; align-items: center; }
+.thbtn:hover { color: var(--ink); }
+.thbtn .arr { color: var(--accent); font-size: .9rem; }
+th[aria-sort] .thbtn { color: var(--ink); }
+@media (max-width: 640px) {
+  .sortbar { display: flex; }
+  .tablehead { padding: 14px 16px; }
+  .tbl thead { display: none; }
+  .tbl, .tbl tbody, .tbl tfoot, .tbl tfoot tr { display: block; }
+  .tbl tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .tbl td { display: block; padding: 0 !important; border: 0; min-width: 0; }
+  .tbl tbody .c-desc { order: 1; flex: 1 1 calc(100% - 140px); font-weight: 500; }
+  .tbl tbody .c-amt { order: 2; flex: 0 0 auto; font-weight: 500; }
+  .tbl tbody .c-date { order: 3; flex: none; color: var(--muted); font-size: .8125rem; }
+  .tbl tbody .c-method { order: 4; flex: none; }
+  .tbl tbody .c-act { order: 5; flex: none; margin-left: auto; }
+  .lnk { padding: .5rem .45rem; }
+  .tbl tfoot tr { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--surface-2); }
+  .tbl tfoot td:empty { display: none; }
+  .lnk { min-height: 40px; }
+  .ptitle { min-width: 0; flex-wrap: wrap; gap: 4px 10px; }
+  .ptitle h2 { font-size: 1.125rem; white-space: nowrap; }
+}
+
+/* Settings */
+.mlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.mrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.mrow:first-child { padding-top: 0; }
+.mrow:last-child { border-bottom: 0; padding-bottom: 0; }
+.mfields { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; }
+.mfields .hint { grid-column: 1 / -1; }
+.mside { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; justify-content: flex-start; padding-top: 22px; }
+.defl { display: inline-flex; align-items: center; gap: .4rem; font-size: .875rem; color: var(--muted); cursor: pointer; min-height: 30px; }
+.defl input { width: 1rem; height: 1rem; accent-color: var(--accent); }
+@media (max-width: 560px) {
+  .mrow { grid-template-columns: minmax(0, 1fr); }
+  .mfields { grid-template-columns: minmax(0, 1fr); }
+  .mside { flex-direction: row; align-items: center; justify-content: space-between; padding-top: 0; }
+}
+.archived { display: flex; flex-direction: column; }
+.archived li { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.archived li:last-child { border-bottom: 0; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+textarea.inp { min-height: 110px; font-family: var(--font-num); font-size: .8125rem; resize: vertical; }
+
+/* Modal + toast */
+.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(8, 14, 11, .55); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.modal { width: 100%; max-width: 460px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 22px; display: flex; flex-direction: column; gap: 16px; max-height: 100%; overflow-y: auto; }
+.modal h2 { font-size: 1.125rem; font-weight: 600; }
+.modal .mfoot { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.modal p { color: var(--muted); }
+.modal p strong { color: var(--ink); }
+#toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 60; max-width: min(92vw, 420px); padding: 12px 16px; border-radius: 10px; background: var(--ink); color: var(--bg); font-weight: 500; font-size: .9375rem; display: flex; gap: 10px; align-items: center; transition: opacity .18s, transform .18s; box-shadow: var(--shadow); }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+#toast.error { background: var(--danger); color: #fff; }
+:root[data-theme="dark"] #toast.error { color: #2a0705; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #toast.error { color: #2a0705; } }
+#toast svg { flex: none; }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">$</span>
+      <div><h1>Daily Ledger</h1><small>Amounts in Mexican pesos (MXN)</small></div>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#expenses" data-view="expenses">Expenses</a>
+      <a href="#summary" data-view="summary">Summary</a>
+      <a href="#setup" data-view="setup">Settings</a>
+    </nav>
+  </header>
+
+  <div id="storageWarn" class="banner danger" hidden role="alert"></div>
+
+  <main>
+    <!-- ================= Expenses ================= -->
+    <section id="view-expenses" class="view" aria-label="Expenses">
+      <div class="cols">
+        <div class="card pad">
+          <form id="expenseForm" class="form" novalidate autocomplete="off">
+            <h2 class="h2">New expense</h2>
+            <div class="two">
+              <div class="field">
+                <label for="fDate">Date</label>
+                <input class="inp" type="date" id="fDate" required aria-describedby="eDate">
+                <div class="err" id="eDate"></div>
+              </div>
+              <div class="field">
+                <label for="fAmount">Amount (MXN)</label>
+                <div class="money"><span aria-hidden="true">$</span><input class="inp" id="fAmount" inputmode="decimal" placeholder="0.00" aria-describedby="eAmount"></div>
+                <div class="err" id="eAmount"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="fDesc">Description</label>
+              <input class="inp" id="fDesc" maxlength="120" placeholder="What was it for?" aria-describedby="eDesc">
+              <div class="err" id="eDesc"></div>
+            </div>
+            <div class="field">
+              <label for="fMethod">Payment method</label>
+              <div class="row">
+                <select class="inp" id="fMethod" aria-describedby="mHint eMethod"></select>
+                <button class="btn" type="button" id="btnNewMethod" aria-expanded="false" aria-controls="newBox">+ New</button>
+              </div>
+              <div class="hint" id="mHint"></div>
+              <div class="err" id="eMethod"></div>
+              <div class="newbox" id="newBox" hidden>
+                <div class="field">
+                  <label for="nName">Name</label>
+                  <input class="inp" id="nName" maxlength="24" placeholder="e.g. HSBC">
+                  <div class="err" id="eNName"></div>
+                </div>
+                <div class="field">
+                  <label for="nClose">Closing day</label>
+                  <input class="inp" id="nClose" type="number" min="1" max="31" inputmode="numeric" placeholder="None">
+                  <div class="err" id="eNClose"></div>
+                </div>
+                <div class="hint" style="grid-column:1/-1">Add a closing day (1 to 31) only for credit cards with a statement cycle. Leave it blank to group by calendar month.</div>
+                <div class="actions">
+                  <button class="btn small" type="button" id="btnNewCancel">Cancel</button>
+                  <button class="btn small primary" type="button" id="btnNewSave">Save method</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn primary" type="submit" id="btnAdd">Add expense</button>
+          </form>
+        </div>
+
+        <div class="card pad">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px">
+            <h2 class="h2">Latest entries</h2>
+            <a class="lnk" href="#summary" style="text-decoration:none">Open summary</a>
+          </div>
+          <div id="latest"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Summary ================= -->
+    <section id="view-summary" class="view" aria-label="Summary" hidden>
+      <div id="sampleBanner" class="banner" hidden>
+        <span>The list includes sample entries (marked Sample). They are not your real expenses.</span>
+        <button class="btn small" type="button" id="btnRemoveSamples">Remove sample data</button>
+      </div>
+
+      <div class="card pad periodbar">
+        <div class="pnav">
+          <button class="btn arrow" type="button" id="pPrev" aria-label="Previous period">&#8249;</button>
+          <div class="ptitle"><h2 id="pTitle"></h2><span class="badge" id="pCur" hidden>Current</span></div>
+          <button class="btn arrow" type="button" id="pNext" aria-label="Next period">&#8250;</button>
+          <button class="btn" type="button" id="pToday">Today</button>
+        </div>
+        <ul class="ranges" id="pRanges" aria-label="Date range of each payment method in this period"></ul>
+      </div>
+
+      <div class="card pad">
+        <div class="total">
+          <div>
+            <span class="lbl" id="oLabel">Total for the period</span>
+            <span class="big num" id="oTotal">$0.00</span>
+          </div>
+          <div class="cnt"><span class="lbl">Expenses</span><b class="num" id="oCount">0</b></div>
+        </div>
+        <div class="share" id="oShare" aria-hidden="true"></div>
+        <div class="mgrid" id="oMethods"></div>
+        <p class="hint" style="margin-top:12px">Select a payment method to filter the table. Select it again to show everything.</p>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <div class="tablehead">
+          <h2 class="h2" id="tTitle">Expenses</h2>
+          <div class="sortbar">
+            <label class="sr" for="sortSel">Sort by</label>
+            <select class="inp" id="sortSel"><option value="date">Date</option><option value="method">Payment method</option><option value="amount">Amount</option></select>
+            <button class="btn small" type="button" id="sortDir" aria-label="Reverse sort order"></button>
+          </div>
+        </div>
+        <div id="tableBox"></div>
+      </div>
+    </section>
+
+    <!-- ================= Settings ================= -->
+    <section id="view-setup" class="view" aria-label="Settings" hidden>
+      <div class="card pad">
+        <div class="stack">
+          <div>
+            <h2 class="h2">Payment methods</h2>
+            <p class="sub">Give a card a closing day and its expenses are grouped by statement cycle. Without one, expenses are grouped by calendar month. Shorter months use their last day. Changing these settings never edits or deletes your expenses.</p>
+          </div>
+          <ul class="mlist" id="mList"></ul>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <form id="addMethodForm" class="stack" novalidate autocomplete="off">
+          <h2 class="h2">Add a payment method</h2>
+          <div class="mfields" style="max-width:560px">
+            <div class="field">
+              <label for="sName">Name</label>
+              <input class="inp" id="sName" maxlength="24" placeholder="e.g. Liverpool card">
+              <div class="err" id="eSName"></div>
+            </div>
+            <div class="field">
+              <label for="sClose">Statement closing day</label>
+              <input class="inp" id="sClose" type="number" min="1" max="31" inputmode="numeric" placeholder="None">
+              <div class="err" id="eSClose"></div>
+            </div>
+          </div>
+          <div><button class="btn primary" type="submit">Add method</button></div>
+        </form>
+      </div>
+
+      <div class="card pad" id="archivedCard" hidden>
+        <div class="stack">
+          <div><h2 class="h2">Removed methods</h2><p class="sub">Their expenses stay in your history and in the Summary. Restore one to use it for new expenses again.</p></div>
+          <ul class="archived" id="archivedList"></ul>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="stack">
+          <div>
+            <h2 class="h2">Backup</h2>
+            <p class="sub">Your data is saved in this browser only. Copy a backup to keep a second copy, or paste one here to restore it.</p>
+          </div>
+          <label class="sr" for="bkText">Backup text</label>
+          <textarea class="inp" id="bkText" spellcheck="false" placeholder="Press Copy backup, or paste a backup here and press Restore."></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" type="button" id="btnBackup">Copy backup</button>
+            <button class="btn" type="button" id="btnRestore">Restore from text</button>
+          </div>
+          <div class="err" id="eBackup"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ======================================================================
+   DATES (pure helpers; dates are 'YYYY-MM-DD' strings, math is done in UTC
+   so the device time zone and daylight saving never shift a day)
+   ====================================================================== */
+/* DATELIB:START */
+const DateLib = {
+  pad(n) { return String(n).padStart(2, '0'); },
+  fmt(y, m, d) { return y + '-' + this.pad(m) + '-' + this.pad(d); },
+  parse(s) { const a = s.split('-').map(Number); return { y: a[0], m: a[1], d: a[2] }; },
+  dim(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); },
+  addDays(s, n) {
+    const p = this.parse(s);
+    const t = new Date(Date.UTC(p.y, p.m - 1, p.d + n));
+    return this.fmt(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
+  },
+  addMonths(y, m, n) { const i = y * 12 + (m - 1) + n; return { y: Math.floor(i / 12), m: (i % 12) + 1 }; },
+  diffDays(a, b) {
+    const pa = this.parse(a), pb = this.parse(b);
+    return Math.round((Date.UTC(pb.y, pb.m - 1, pb.d) - Date.UTC(pa.y, pa.m - 1, pa.d)) / 86400000);
+  },
+  today() { const t = new Date(); return this.fmt(t.getFullYear(), t.getMonth() + 1, t.getDate()); },
+  isValid(s) {
+    if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const p = this.parse(s);
+    return p.y >= 1990 && p.y <= 2100 && p.m >= 1 && p.m <= 12 && p.d >= 1 && p.d <= this.dim(p.y, p.m);
+  }
+};
+
+/* ======================================================================
+   BILLING (pure business logic)
+   A period for a card is (previous closing date, this closing date].
+   With closing day 12: the period closing 12 Nov runs 13 Oct to 12 Nov,
+   both included. A purchase on 13 Nov belongs to the next period.
+   Methods without a closing day use the calendar month.
+   ====================================================================== */
+const Billing = {
+  closingOn(y, m, c) { return DateLib.fmt(y, m, Math.min(c, DateLib.dim(y, m))); },
+  periodFor(dateStr, closingDay) {
+    const p = DateLib.parse(dateStr);
+    if (!closingDay) {
+      return { start: DateLib.fmt(p.y, p.m, 1), end: DateLib.fmt(p.y, p.m, DateLib.dim(p.y, p.m)), cycle: false };
+    }
+    const thisEnd = this.closingOn(p.y, p.m, closingDay);
+    if (dateStr <= thisEnd) {
+      const pm = DateLib.addMonths(p.y, p.m, -1);
+      return { start: DateLib.addDays(this.closingOn(pm.y, pm.m, closingDay), 1), end: thisEnd, cycle: true };
+    }
+    const nm = DateLib.addMonths(p.y, p.m, 1);
+    return { start: DateLib.addDays(thisEnd, 1), end: this.closingOn(nm.y, nm.m, closingDay), cycle: true };
+  },
+  /* The period `offset` steps away from the one that contains today. Each method steps by its
+     own periods (cycles or calendar months), so periods stay contiguous and offset 0 always
+     contains today, whatever the closing day. */
+  periodAt(todayStr, closingDay, offset) {
+    let p = this.periodFor(todayStr, closingDay);
+    for (let i = 0; i < -offset; i++) p = this.periodFor(DateLib.addDays(p.start, -1), closingDay);
+    for (let i = 0; i < offset; i++) p = this.periodFor(DateLib.addDays(p.end, 1), closingDay);
+    return p;
+  }
+};
+/* DATELIB:END */
+
+/* ======================================================================
+   MONEY (amounts are summed as integer centavos to avoid float drift)
+   ====================================================================== */
+const Money = {
+  nf: new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }),
+  format(cents) { return this.nf.format(cents / 100); },
+  cents(pesos) { return Math.round(pesos * 100); },
+  parse(raw) {
+    const s = String(raw == null ? '' : raw).trim().replace(/^\$/, '').replace(/[,\s]/g, '');
+    if (s === '') return { error: 'Enter an amount.' };
+    if (!/^\d*\.?\d*$/.test(s) || s === '.') return { error: 'Use numbers only, for example 249.90.' };
+    if ((s.split('.')[1] || '').length > 2) return { error: 'Use at most two decimals.' };
+    const n = Number(s);
+    if (!(n > 0)) return { error: 'The amount must be greater than zero.' };
+    if (n > 99999999.99) return { error: 'That amount is too large.' };
+    return { value: Math.round(n * 100) / 100 };
+  }
+};
+
+/* ======================================================================
+   STORE (persistence: localStorage, one JSON document)
+   ====================================================================== */
+const KEY = 'dailyledger.v1';
+const PALETTE = ['#3c9a5f', '#3a6ee0', '#d6453d', '#8a4fd0', '#d99a1e', '#1aa3a3', '#d6478f', '#6b7a90'];
+
+function uid() {
+  try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
+  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
+
+function defaults() {
+  const now = Date.now();
+  return {
+    version: 1,
+    defaultMethodId: 'bancomer',
+    methods: [
+      { id: 'cash', name: 'Cash', closingDay: null, color: PALETTE[0], archived: false, createdAt: now },
+      { id: 'bancomer', name: 'Bancomer', closingDay: 12, color: PALETTE[1], archived: false, createdAt: now + 1 },
+      { id: 'banamex', name: 'Banamex', closingDay: 8, color: PALETTE[2], archived: false, createdAt: now + 2 },
+      { id: 'nu', name: 'Nu', closingDay: null, color: PALETTE[3], archived: false, createdAt: now + 3 }
+    ],
+    expenses: []
+  };
+}
+
+function normalize(d) {
+  if (!d || typeof d !== 'object' || !Array.isArray(d.methods) || !Array.isArray(d.expenses)) return null;
+  const out = { version: 1, methods: [], expenses: [], defaultMethodId: null };
+  const seen = new Set();
+  d.methods.forEach(function (m, i) {
+    if (!m || typeof m.id !== 'string' || seen.has(m.id) || typeof m.name !== 'string' || !m.name.trim()) return;
+    seen.add(m.id);
+    const c = Number(m.closingDay);
+    out.methods.push({
+      id: m.id, name: m.name.trim().slice(0, 24),
+      closingDay: Number.isInteger(c) && c >= 1 && c <= 31 ? c : null,
+      color: typeof m.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(m.color) ? m.color : PALETTE[i % PALETTE.length],
+      archived: !!m.archived, createdAt: Number(m.createdAt) || Date.now()
+    });
+  });
+  const ids = new Set();
+  d.expenses.forEach(function (e) {
+    if (!e || typeof e.id !== 'string' || ids.has(e.id) || !DateLib.isValid(e.date)) return;
+    const amt = Number(e.amount);
+    if (!(amt > 0) || !isFinite(amt)) return;
+    ids.add(e.id);
+    let mid = e.methodId;
+    if (!seen.has(mid)) {
+      if (!seen.has('unknown')) {
+        seen.add('unknown');
+        out.methods.push({ id: 'unknown', name: 'Unknown', closingDay: null, color: PALETTE[7], archived: true, createdAt: Date.now() });
+      }
+      mid = 'unknown';
+    }
+    out.expenses.push({
+      id: e.id, date: e.date, amount: Math.round(amt * 100) / 100,
+      description: String(e.description || '').slice(0, 120) || '(no description)',
+      methodId: mid, createdAt: Number(e.createdAt) || 0, sample: !!e.sample
+    });
+  });
+  if (!out.methods.some(function (m) { return !m.archived; })) return null;
+  out.defaultMethodId = seen.has(d.defaultMethodId) ? d.defaultMethodId : out.methods.find(function (m) { return !m.archived; }).id;
+  return out;
+}
+
+const Store = {
+  ok: true,
+  load() {
+    let raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { this.ok = false; return null; }
+    if (!raw) return null;
+    try {
+      const n = normalize(JSON.parse(raw));
+      if (n) return n;
+    } catch (e) {}
+    try { localStorage.setItem(KEY + '.corrupt', raw); } catch (e) {}
+    return { corrupt: true };
+  },
+  save(data) {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); this.ok = true; } catch (e) { this.ok = false; }
+    return this.ok;
+  }
+};
+
+/* ======================================================================
+   MODEL (state + actions; every change is saved and announced)
+   ====================================================================== */
+let data = defaults();
+const listeners = [];
+function emit(type) { listeners.forEach(function (f) { f(type); }); }
+function commit(type) { Store.save(data); emit(type); }
+
+const Model = {
+  methodById(id) { return data.methods.find(function (m) { return m.id === id; }); },
+  activeMethods() { return data.methods.filter(function (m) { return !m.archived; }); },
+  archivedMethods() { return data.methods.filter(function (m) { return m.archived; }); },
+  defaultMethod() { return this.methodById(data.defaultMethodId) && !this.methodById(data.defaultMethodId).archived ? this.methodById(data.defaultMethodId) : this.activeMethods()[0]; },
+  countFor(methodId) { return data.expenses.filter(function (e) { return e.methodId === methodId; }).length; },
+
+  validateExpense(raw) {
+    const errors = {}; const clean = {};
+    if (!DateLib.isValid(raw.date)) errors.date = 'Pick a valid date between 1990 and 2100.'; else clean.date = raw.date;
+    const a = Money.parse(raw.amount);
+    if (a.error) errors.amount = a.error; else clean.amount = a.value;
+    const desc = String(raw.description || '').trim();
+    if (!desc) errors.description = 'Add a short description.';
+    else if (desc.length > 120) errors.description = 'Keep it under 120 characters.';
+    else clean.description = desc;
+    if (!this.methodById(raw.methodId)) errors.method = 'Choose a payment method.'; else clean.methodId = raw.methodId;
+    return { errors: errors, clean: clean, ok: Object.keys(errors).length === 0 };
+  },
+  addExpense(raw) {
+    const v = this.validateExpense(raw);
+    if (!v.ok) return v;
+    const exp = Object.assign({ id: uid(), createdAt: Date.now(), sample: false }, v.clean);
+    data.expenses.push(exp);
+    commit('expense');
+    return { ok: true, expense: exp };
+  },
+  updateExpense(id, raw) {
+    const v = this.validateExpense(raw);
+    if (!v.ok) return v;
+    const e = data.expenses.find(function (x) { return x.id === id; });
+    if (!e) return { ok: false, errors: { description: 'This expense no longer exists.' } };
+    Object.assign(e, v.clean, { sample: false });
+    commit('expense');
+    return { ok: true, expense: e };
+  },
+  deleteExpense(id) {
+    data.expenses = data.expenses.filter(function (e) { return e.id !== id; });
+    commit('expense');
+  },
+
+  parseClosing(raw) {
+    if (raw === '' || raw == null) return { value: null };
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < 1 || n > 31) return { error: 'Use a day from 1 to 31, or leave it blank.' };
+    return { value: n };
+  },
+  checkName(name, exceptId) {
+    const n = String(name || '').trim();
+    if (!n) return { error: 'Enter a name.' };
+    if (n.length > 24) return { error: 'Keep the name under 24 characters.' };
+    if (data.methods.some(function (m) { return m.id !== exceptId && m.name.toLowerCase() === n.toLowerCase(); })) return { error: 'A method with this name already exists.' };
+    return { value: n };
+  },
+  addMethod(name, closingRaw) {
+    const errors = {};
+    const n = this.checkName(name); if (n.error) errors.name = n.error;
+    const c = this.parseClosing(closingRaw); if (c.error) errors.closing = c.error;
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    const m = { id: uid(), name: n.value, closingDay: c.value, color: PALETTE[data.methods.length % PALETTE.length], archived: false, createdAt: Date.now() };
+    data.methods.push(m);
+    commit('method');
+    return { ok: true, method: m };
+  },
+  updateMethod(id, patch) {
+    const m = this.methodById(id); if (!m) return { ok: false, errors: { name: 'Method not found.' } };
+    const errors = {}; const next = {};
+    if ('name' in patch) { const n = this.checkName(patch.name, id); if (n.error) errors.name = n.error; else next.name = n.value; }
+    if ('closingDay' in patch) { const c = this.parseClosing(patch.closingDay); if (c.error) errors.closing = c.error; else next.closingDay = c.value; }
+    if (Object.keys(errors).length) return { ok: false, errors: errors };
+    Object.assign(m, next);
+    commit('method-edit');
+    return { ok: true };
+  },
+  setDefault(id) { if (this.methodById(id)) { data.defaultMethodId = id; commit('method'); } },
+  archiveMethod(id) {
+    const m = this.methodById(id);
+    if (!m || m.archived) return { ok: false };
+    if (this.activeMethods().length <= 1) return { ok: false, error: 'Keep at least one active payment method.' };
+    m.archived = true;
+    if (data.defaultMethodId === id) data.defaultMethodId = this.activeMethods()[0].id;
+    commit('method');
+    return { ok: true };
+  },
+  restoreMethod(id) { const m = this.methodById(id); if (m) { m.archived = false; commit('method'); } },
+
+  hasSamples() { return data.expenses.some(function (e) { return e.sample; }); },
+  removeSamples() { data.expenses = data.expenses.filter(function (e) { return !e.sample; }); commit('expense'); },
+  loadSamples() {
+    const today = DateLib.today();
+    const byId = function (id) { const m = Model.methodById(id); return m && !m.archived ? m : Model.defaultMethod(); };
+    const items = [
+      [0, 'bancomer', 'Groceries, Soriana', 684.3], [1, 'cash', 'Tacos de canasta', 90], [2, 'nu', 'Spotify', 129],
+      [3, 'banamex', 'Pharmacy', 312.5], [5, 'bancomer', 'Uber to the office', 148.2], [7, 'cash', 'Coffee and pan dulce', 76],
+      [9, 'nu', 'Movie tickets', 248], [11, 'banamex', 'Gasoline', 850], [14, 'bancomer', 'Electric bill, CFE', 542],
+      [18, 'nu', 'Online course', 399], [24, 'bancomer', 'Dinner out', 930], [31, 'banamex', 'Internet, Telmex', 389],
+      [38, 'cash', 'Market, fruit and vegetables', 215.5], [45, 'bancomer', 'Netflix', 219]
+    ].map(function (r) { return { date: DateLib.addDays(today, -r[0]), method: byId(r[1]), description: r[2], amount: r[3] }; });
+    ['bancomer', 'banamex'].forEach(function (id) {
+      const m = Model.methodById(id);
+      if (!m || m.archived || !m.closingDay) return;
+      const lastClose = DateLib.addDays(Billing.periodFor(today, m.closingDay).start, -1);
+      items.push({ date: lastClose, method: m, description: 'Lunch on the closing day', amount: 160 });
+      items.push({ date: DateLib.addDays(lastClose, 1), method: m, description: 'Lunch the day after closing', amount: 175 });
+    });
+    items.forEach(function (it, i) {
+      data.expenses.push({ id: uid(), date: it.date, amount: it.amount, description: it.description, methodId: it.method.id, createdAt: Date.now() + i, sample: true });
+    });
+    commit('expense');
+  },
+  replaceAll(text) {
+    let parsed;
+    try { parsed = JSON.parse(text); } catch (e) { return { ok: false, error: 'That text is not a valid backup.' }; }
+    const n = normalize(parsed);
+    if (!n) return { ok: false, error: 'That backup is missing payment methods or expenses.' };
+    data = n; commit('reload');
+    return { ok: true, count: n.expenses.length };
+  },
+
+  /* What the Summary shows for a given offset and optional method filter */
+  summarize(todayStr, offset, filterId) {
+    const t = DateLib.parse(todayStr);
+    const label = DateLib.addMonths(t.y, t.m, offset);
+    const withHistory = new Set(data.expenses.map(function (e) { return e.methodId; }));
+    const groups = data.methods
+      .filter(function (m) { return !m.archived || withHistory.has(m.id); })
+      .map(function (m) {
+        const period = Billing.periodAt(todayStr, m.closingDay, offset);
+        let cents = 0, count = 0;
+        data.expenses.forEach(function (e) {
+          if (e.methodId === m.id && e.date >= period.start && e.date <= period.end) { cents += Money.cents(e.amount); count++; }
+        });
+        return { method: m, period: period, cents: cents, count: count };
+      })
+      .filter(function (g) { return !g.method.archived || g.count > 0; });
+    const filter = groups.some(function (g) { return g.method.id === filterId; }) ? filterId : null;
+    const shown = groups.filter(function (g) { return !filter || g.method.id === filter; });
+    const rows = [];
+    shown.forEach(function (g) {
+      data.expenses.forEach(function (e) {
+        if (e.methodId === g.method.id && e.date >= g.period.start && e.date <= g.period.end) rows.push(e);
+      });
+    });
+    return {
+      label: label, groups: groups, filter: filter, rows: rows,
+      totalCents: shown.reduce(function (s, g) { return s + g.cents; }, 0),
+      count: shown.reduce(function (s, g) { return s + g.count; }, 0),
+      allCents: groups.reduce(function (s, g) { return s + g.cents; }, 0)
+    };
+  }
+};
+
+/* ======================================================================
+   UI
+   ====================================================================== */
+const $ = function (s, r) { return (r || document).querySelector(s); };
+const $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+const esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+function dShort(s) { const p = DateLib.parse(s); return new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' }).format(new Date(Date.UTC(p.y, p.m - 1, p.d))); }
+function dFull(s) { const p = DateLib.parse(s); return new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(Date.UTC(p.y, p.m - 1, p.d))); }
+function rangeText(a, b) { return (DateLib.parse(a).y === DateLib.parse(b).y ? dShort(a) : dFull(a)) + ' to ' + dFull(b); }
+function pill(m) { return '<span class="pill" style="--c:' + m.color + '"><i></i>' + esc(m.name) + (m.archived ? ' (removed)' : '') + '</span>'; }
+function closingText(m) { return m.closingDay ? 'Statement closes on the ' + ordinal(m.closingDay) + ' of each month' : 'Grouped by calendar month'; }
+
+const ui = { offset: 0, filter: null, sort: { key: 'date', dir: 'desc' } };
+
+/* ---- toast ---- */
+let toastTimer = null;
+function toast(msg, kind) {
+  const t = $('#toast');
+  const icon = kind === 'error'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  t.className = kind === 'error' ? 'error' : '';
+  t.innerHTML = icon + '<span>' + esc(msg) + '</span>';
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 3200);
+}
+
+/* ---- modal ---- */
+const Modal = {
+  open(opts) {
+    const prev = document.activeElement;
+    const root = $('#modalRoot');
+    root.innerHTML = '<div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" tabindex="-1">' +
+      '<h2 id="mTitle">' + esc(opts.title) + '</h2><div id="mBody">' + opts.body + '</div><div class="mfoot" id="mFoot"></div></div></div>';
+    const ov = $('.overlay', root), box = $('.modal', root), foot = $('#mFoot', root);
+    const close = function () { document.removeEventListener('keydown', onKey, true); root.innerHTML = ''; if (prev && prev.focus && document.contains(prev)) prev.focus(); };
+    opts.buttons.forEach(function (b) {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'btn' + (b.kind ? ' ' + b.kind : ''); el.textContent = b.label;
+      el.addEventListener('click', function () { if (b.onClick) { if (b.onClick(close) === false) return; } else close(); });
+      foot.appendChild(el);
+    });
+    function onKey(e) {
+      if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
+      if (e.key === 'Tab') {
+        const f = $$('button, input, select, textarea, [href]', box).filter(function (x) { return !x.disabled && x.offsetParent !== null; });
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+    ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
+    const firstField = $('input, select', box);
+    (firstField || $('button', foot) || box).focus();
+    return { close: close, box: box };
+  },
+  confirm(o) {
+    return this.open({
+      title: o.title,
+      body: '<p>' + o.message + '</p>',
+      buttons: [
+        { label: 'Cancel' },
+        { label: o.confirmLabel, kind: o.danger ? 'danger' : 'primary', onClick: function (close) { close(); o.onConfirm(); } }
+      ]
+    });
+  }
+};
+
+/* ---- field error helpers ---- */
+function setErr(inputId, errId, msg) {
+  const i = document.getElementById(inputId), e = document.getElementById(errId);
+  if (e) e.textContent = msg || '';
+  if (i) { if (msg) i.setAttribute('aria-invalid', 'true'); else i.removeAttribute('aria-invalid'); }
+}
+
+/* ---- navigation ---- */
+const VIEWS = ['expenses', 'summary', 'setup'];
+function route() {
+  const h = location.hash.replace('#', '');
+  const view = VIEWS.indexOf(h) >= 0 ? h : 'expenses';
+  VIEWS.forEach(function (v) { document.getElementById('view-' + v).hidden = v !== view; });
+  $$('.tabs a').forEach(function (a) { if (a.dataset.view === view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+}
+window.addEventListener('hashchange', route);
+
+/* ---- Expenses form ---- */
+function renderMethodSelect() {
+  const sel = $('#fMethod'); const prev = sel.value;
+  const active = Model.activeMethods();
+  sel.innerHTML = active.map(function (m) { return '<option value="' + esc(m.id) + '">' + esc(m.name) + '</option>'; }).join('');
+  sel.value = active.some(function (m) { return m.id === prev; }) ? prev : Model.defaultMethod().id;
+  updateMethodHint();
+}
+function updateMethodHint() { const m = Model.methodById($('#fMethod').value); $('#mHint').textContent = m ? closingText(m) : ''; }
+
+function resetForm() {
+  $('#fDate').value = DateLib.today();
+  $('#fAmount').value = ''; $('#fDesc').value = '';
+  $('#fMethod').value = Model.defaultMethod().id;
+  updateMethodHint();
+  ['Date:eDate', 'Amount:eAmount', 'Desc:eDesc', 'Method:eMethod'].forEach(function (p) { const a = p.split(':'); setErr('f' + a[0], a[1], ''); });
+}
+
+let addLock = false;
+$('#expenseForm').addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  if (addLock) return;
+  const res = Model.addExpense({ date: $('#fDate').value, amount: $('#fAmount').value, description: $('#fDesc').value, methodId: $('#fMethod').value });
+  setErr('fDate', 'eDate', res.errors && res.errors.date);
+  setErr('fAmount', 'eAmount', res.errors && res.errors.amount);
+  setErr('fDesc', 'eDesc', res.errors && res.errors.description);
+  setErr('fMethod', 'eMethod', res.errors && res.errors.method);
+  if (!res.ok) {
+    const first = res.errors.date ? '#fDate' : res.errors.amount ? '#fAmount' : res.errors.description ? '#fDesc' : '#fMethod';
+    $(first).focus();
+    return;
+  }
+  addLock = true;
+  const btn = $('#btnAdd'); btn.disabled = true; btn.textContent = 'Added';
+  const m = Model.methodById(res.expense.methodId);
+  toast(Money.format(Money.cents(res.expense.amount)) + ' added to ' + m.name);
+  resetForm();
+  $('#fAmount').focus();
+  setTimeout(function () { addLock = false; btn.disabled = false; btn.textContent = 'Add expense'; }, 900);
+});
+['fDate', 'fAmount', 'fDesc', 'fMethod'].forEach(function (id) {
+  const map = { fDate: 'eDate', fAmount: 'eAmount', fDesc: 'eDesc', fMethod: 'eMethod' };
+  document.getElementById(id).addEventListener('input', function () { setErr(id, map[id], ''); });
+});
+$('#fMethod').addEventListener('change', updateMethodHint);
+
+/* inline "new method" */
+function toggleNewBox(open) {
+  $('#newBox').hidden = !open; $('#btnNewMethod').setAttribute('aria-expanded', String(open));
+  if (open) { $('#nName').focus(); } else { $('#nName').value = ''; $('#nClose').value = ''; setErr('nName', 'eNName', ''); setErr('nClose', 'eNClose', ''); }
+}
+$('#btnNewMethod').addEventListener('click', function () { toggleNewBox($('#newBox').hidden); });
+$('#btnNewCancel').addEventListener('click', function () { toggleNewBox(false); $('#btnNewMethod').focus(); });
+function saveInlineMethod() {
+  const r = Model.addMethod($('#nName').value, $('#nClose').value);
+  setErr('nName', 'eNName', r.errors && r.errors.name);
+  setErr('nClose', 'eNClose', r.errors && r.errors.closing);
+  if (!r.ok) return;
+  renderMethodSelect();
+  $('#fMethod').value = r.method.id; updateMethodHint();
+  toggleNewBox(false);
+  toast(r.method.name + ' is ready to use');
+  $('#fAmount').focus();
+}
+$('#btnNewSave').addEventListener('click', saveInlineMethod);
+['nName', 'nClose'].forEach(function (id) { document.getElementById(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); saveInlineMethod(); } }); });
+
+/* latest entries */
+function renderLatest() {
+  const box = $('#latest');
+  if (!data.expenses.length) {
+    box.innerHTML = '<div class="empty"><div><strong>No expenses yet.</strong><br>Add your first one with the form. Or load a few clearly marked sample entries to see how the Summary works.</div><button class="btn small" type="button" id="btnSamples">Load sample data</button></div>';
+    return;
+  }
+  const last = data.expenses.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 6);
+  box.innerHTML = '<ul class="latest">' + last.map(function (e) {
+    const m = Model.methodById(e.methodId);
+    return '<li><span class="d">' + esc(e.description) + (e.sample ? '<span class="tag">Sample</span>' : '') + '</span><span class="a num">' + Money.format(Money.cents(e.amount)) + '</span>' +
+      '<span class="m">' + pill(m) + '<span class="num">' + dFull(e.date) + '</span></span></li>';
+  }).join('') + '</ul>';
+}
+
+/* ---- Summary ---- */
+function sortRows(rows) {
+  const k = ui.sort.key, f = ui.sort.dir === 'asc' ? 1 : -1;
+  return rows.slice().sort(function (a, b) {
+    let c = 0;
+    if (k === 'amount') c = Money.cents(a.amount) - Money.cents(b.amount);
+    else if (k === 'method') c = Model.methodById(a.methodId).name.localeCompare(Model.methodById(b.methodId).name);
+    else c = a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    if (c === 0) c = a.date < b.date ? -1 : a.date > b.date ? 1 : (a.createdAt - b.createdAt);
+    return c * f;
+  });
+}
+
+function renderSummary() {
+  const today = DateLib.today();
+  const S = Model.summarize(today, ui.offset, ui.filter);
+  ui.filter = S.filter;
+
+  $('#sampleBanner').hidden = !Model.hasSamples();
+  $('#pTitle').textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', month: 'long', year: 'numeric' }).format(new Date(Date.UTC(S.label.y, S.label.m - 1, 1)));
+  $('#pCur').hidden = ui.offset !== 0;
+  $('#pToday').disabled = ui.offset === 0;
+
+  /* date range per group of methods */
+  const byRange = {};
+  S.groups.forEach(function (g) { const k = g.period.start + '|' + g.period.end; (byRange[k] = byRange[k] || { period: g.period, names: [] }).names.push(g.method); });
+  $('#pRanges').innerHTML = Object.keys(byRange).map(function (k) {
+    const r = byRange[k];
+    return '<li>' + r.names.map(pill).join(' ') + '<span class="num">' + rangeText(r.period.start, r.period.end) + '</span></li>';
+  }).join('');
+
+  /* overview */
+  const fm = S.filter ? Model.methodById(S.filter) : null;
+  $('#oLabel').textContent = fm ? 'Total for ' + fm.name : 'Total for the period';
+  $('#oTotal').textContent = Money.format(S.totalCents);
+  $('#oCount').textContent = String(S.count);
+  $('#oShare').innerHTML = S.allCents > 0 ? S.groups.filter(function (g) { return g.cents > 0; }).map(function (g) {
+    return '<span style="flex:' + g.cents + ' 1 0;background:' + g.method.color + '"></span>';
+  }).join('') : '';
+  $('#oShare').hidden = S.allCents <= 0;
+  $('#oMethods').innerHTML = S.groups.map(function (g) {
+    const m = g.method; let meta;
+    if (m.closingDay) {
+      meta = 'Closes on the ' + ordinal(m.closingDay);
+      if (ui.offset === 0) {
+        const left = DateLib.diffDays(today, g.period.end);
+        meta += left === 0 ? ', today' : left === 1 ? ', 1 day left' : ', ' + left + ' days left';
+      }
+    } else meta = 'Calendar month';
+    return '<button type="button" class="mcard' + (g.cents === 0 ? ' zero' : '') + '" data-filter="' + esc(m.id) + '" aria-pressed="' + (S.filter === m.id) + '">' +
+      '<span class="mname" style="--c:' + m.color + '"><i></i>' + esc(m.name) + (m.archived ? ' (removed)' : '') + '</span>' +
+      '<span class="mamt num">' + Money.format(g.cents) + '</span>' +
+      '<span class="mmeta">' + g.count + (g.count === 1 ? ' expense' : ' expenses') + ' &middot; ' + esc(meta) + '</span></button>';
+  }).join('');
+
+  /* sort controls */
+  $('#sortSel').value = ui.sort.key;
+  $('#sortDir').textContent = ui.sort.dir === 'desc' ? (ui.sort.key === 'date' ? 'Newest first' : ui.sort.key === 'amount' ? 'Highest first' : 'Z to A') : (ui.sort.key === 'date' ? 'Oldest first' : ui.sort.key === 'amount' ? 'Lowest first' : 'A to Z');
+
+  /* table */
+  $('#tTitle').textContent = fm ? 'Expenses on ' + fm.name : 'All expenses in this period';
+  const box = $('#tableBox');
+  if (!data.expenses.length) {
+    box.innerHTML = '<div class="empty"><div><strong>Nothing recorded yet.</strong><br>Expenses you add will appear here, grouped by statement cycle.</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><a class="btn small primary" href="#expenses" style="text-decoration:none">Add an expense</a><button class="btn small" type="button" id="btnSamples2">Load sample data</button></div></div>';
+    return;
+  }
+  if (!S.rows.length) {
+    box.innerHTML = '<div class="empty"><div><strong>No expenses in this period' + (fm ? ' for ' + esc(fm.name) : '') + '.</strong><br>Use the arrows above to look at another period.</div></div>';
+    return;
+  }
+  const rows = sortRows(S.rows);
+  const arr = function (k) { return ui.sort.key === k ? '<span class="arr" aria-hidden="true">' + (ui.sort.dir === 'asc' ? '&#8593;' : '&#8595;') + '</span>' : ''; };
+  const ariaSort = function (k) { return ui.sort.key === k ? ' aria-sort="' + (ui.sort.dir === 'asc' ? 'ascending' : 'descending') + '"' : ''; };
+  box.innerHTML = '<div class="tablewrap"><table class="tbl"><thead><tr>' +
+    '<th' + ariaSort('date') + ' class="c-date"><button class="thbtn" type="button" data-sort="date">Date' + arr('date') + '</button></th>' +
+    '<th class="c-desc">Description</th>' +
+    '<th' + ariaSort('method') + '><button class="thbtn" type="button" data-sort="method">Payment method' + arr('method') + '</button></th>' +
+    '<th' + ariaSort('amount') + ' class="c-amt"><button class="thbtn" type="button" data-sort="amount">Amount' + arr('amount') + '</button></th>' +
+    '<th class="c-act"><span class="sr">Actions</span></th></tr></thead><tbody>' +
+    rows.map(function (e) {
+      const m = Model.methodById(e.methodId);
+      return '<tr data-id="' + esc(e.id) + '"><td class="c-date num">' + dFull(e.date) + '</td>' +
+        '<td class="c-desc">' + esc(e.description) + (e.sample ? '<span class="tag">Sample</span>' : '') + '</td>' +
+        '<td class="c-method">' + pill(m) + '</td>' +
+        '<td class="c-amt num">' + Money.format(Money.cents(e.amount)) + '</td>' +
+        '<td class="c-act"><button class="lnk" type="button" data-act="edit" aria-label="Edit ' + esc(e.description) + '">Edit</button><button class="lnk danger" type="button" data-act="delete" aria-label="Delete ' + esc(e.description) + '">Delete</button></td></tr>';
+    }).join('') +
+    '</tbody><tfoot><tr><td colspan="3">Total, ' + rows.length + (rows.length === 1 ? ' expense' : ' expenses') + '</td><td class="c-amt num">' + Money.format(S.totalCents) + '</td><td></td></tr></tfoot></table></div>';
+}
+
+function setSort(key) {
+  if (ui.sort.key === key) ui.sort.dir = ui.sort.dir === 'asc' ? 'desc' : 'asc';
+  else { ui.sort.key = key; ui.sort.dir = key === 'method' ? 'asc' : 'desc'; }
+  renderSummary();
+}
+$('#sortSel').addEventListener('change', function (e) { ui.sort.key = e.target.value; ui.sort.dir = e.target.value === 'method' ? 'asc' : 'desc'; renderSummary(); });
+$('#sortDir').addEventListener('click', function () { ui.sort.dir = ui.sort.dir === 'asc' ? 'desc' : 'asc'; renderSummary(); });
+$('#pPrev').addEventListener('click', function () { ui.offset -= 1; renderSummary(); });
+$('#pNext').addEventListener('click', function () { ui.offset += 1; renderSummary(); });
+$('#pToday').addEventListener('click', function () { ui.offset = 0; renderSummary(); });
+$('#oMethods').addEventListener('click', function (e) {
+  const b = e.target.closest('[data-filter]'); if (!b) return;
+  ui.filter = ui.filter === b.dataset.filter ? null : b.dataset.filter; renderSummary();
+});
+$('#tableBox').addEventListener('click', function (e) {
+  const s = e.target.closest('[data-sort]'); if (s) { setSort(s.dataset.sort); return; }
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  const id = a.closest('tr').dataset.id;
+  if (a.dataset.act === 'edit') openEdit(id); else askDelete(id);
+});
+$('#btnRemoveSamples').addEventListener('click', function () {
+  Modal.confirm({ title: 'Remove sample data?', message: 'This deletes only the entries marked Sample. Expenses you added yourself stay.', confirmLabel: 'Remove samples', danger: true,
+    onConfirm: function () { Model.removeSamples(); toast('Sample data removed'); } });
+});
+document.addEventListener('click', function (e) {
+  if (e.target.closest('#btnSamples, #btnSamples2')) { Model.loadSamples(); toast('Sample entries added and marked Sample'); }
+});
+
+function askDelete(id) {
+  const e = data.expenses.find(function (x) { return x.id === id; }); if (!e) return;
+  Modal.confirm({
+    title: 'Delete this expense?',
+    message: '<strong>' + esc(e.description) + '</strong><br>' + Money.format(Money.cents(e.amount)) + ' on ' + dFull(e.date) + '. This cannot be undone.',
+    confirmLabel: 'Delete', danger: true,
+    onConfirm: function () { Model.deleteExpense(id); toast('Expense deleted'); }
+  });
+}
+
+function openEdit(id) {
+  const e = data.expenses.find(function (x) { return x.id === id; }); if (!e) return;
+  const opts = Model.activeMethods().slice();
+  const cur = Model.methodById(e.methodId);
+  if (cur.archived) opts.push(cur);
+  const body = '<form id="editForm" class="form" novalidate autocomplete="off">' +
+    '<div class="field"><label for="xDate">Date</label><input class="inp" type="date" id="xDate" value="' + esc(e.date) + '"><div class="err" id="xeDate"></div></div>' +
+    '<div class="field"><label for="xAmount">Amount (MXN)</label><div class="money"><span aria-hidden="true">$</span><input class="inp" id="xAmount" inputmode="decimal" value="' + esc(e.amount.toFixed(2)) + '"></div><div class="err" id="xeAmount"></div></div>' +
+    '<div class="field"><label for="xDesc">Description</label><input class="inp" id="xDesc" maxlength="120" value="' + esc(e.description) + '"><div class="err" id="xeDesc"></div></div>' +
+    '<div class="field"><label for="xMethod">Payment method</label><select class="inp" id="xMethod">' +
+    opts.map(function (m) { return '<option value="' + esc(m.id) + '"' + (m.id === e.methodId ? ' selected' : '') + '>' + esc(m.name) + (m.archived ? ' (removed)' : '') + '</option>'; }).join('') +
+    '</select><div class="err" id="xeMethod"></div></div></form>';
+  const modal = Modal.open({
+    title: 'Edit expense', body: body,
+    buttons: [{ label: 'Cancel' }, { label: 'Save changes', kind: 'primary', onClick: function (close) { return save(close); } }]
+  });
+  function save(close) {
+    const r = Model.updateExpense(id, { date: $('#xDate').value, amount: $('#xAmount').value, description: $('#xDesc').value, methodId: $('#xMethod').value });
+    setErr('xDate', 'xeDate', r.errors && r.errors.date);
+    setErr('xAmount', 'xeAmount', r.errors && r.errors.amount);
+    setErr('xDesc', 'xeDesc', r.errors && r.errors.description);
+    setErr('xMethod', 'xeMethod', r.errors && r.errors.method);
+    if (!r.ok) return false;
+    close(); toast('Changes saved');
+  }
+  $('#editForm', modal.box).addEventListener('submit', function (ev) { ev.preventDefault(); save(modal.close); });
+}
+
+/* ---- Settings ---- */
+function renderSettings() {
+  const list = $('#mList');
+  list.innerHTML = Model.activeMethods().map(function (m) {
+    return '<li class="mrow" data-id="' + esc(m.id) + '"><div class="mfields">' +
+      '<div class="field"><label for="mn-' + esc(m.id) + '">Name</label><input class="inp" id="mn-' + esc(m.id) + '" data-field="name" maxlength="24" value="' + esc(m.name) + '" style="border-left:6px solid ' + m.color + '"><div class="err" id="mne-' + esc(m.id) + '"></div></div>' +
+      '<div class="field"><label for="mc-' + esc(m.id) + '">Statement closing day</label><input class="inp" id="mc-' + esc(m.id) + '" data-field="closing" type="number" min="1" max="31" inputmode="numeric" placeholder="None" value="' + (m.closingDay || '') + '"><div class="err" id="mce-' + esc(m.id) + '"></div></div>' +
+      '<div class="hint" data-hint>' + esc(closingText(m)) + '</div></div>' +
+      '<div class="mside"><label class="defl"><input type="radio" name="defMethod" data-act="default"' + (Model.defaultMethod().id === m.id ? ' checked' : '') + '> Default</label>' +
+      '<button class="lnk danger" type="button" data-act="archive">Remove</button></div></li>';
+  }).join('');
+  const arch = Model.archivedMethods();
+  $('#archivedCard').hidden = arch.length === 0;
+  $('#archivedList').innerHTML = arch.map(function (m) {
+    const n = Model.countFor(m.id);
+    return '<li data-id="' + esc(m.id) + '"><span>' + pill(m) + ' <span class="hint">' + n + (n === 1 ? ' expense' : ' expenses') + ' kept</span></span><button class="btn small" type="button" data-act="restore">Restore</button></li>';
+  }).join('');
+}
+$('#mList').addEventListener('change', function (e) {
+  const inp = e.target.closest('[data-field]'); if (!inp) return;
+  const row = inp.closest('.mrow'), id = row.dataset.id;
+  const isName = inp.dataset.field === 'name';
+  const r = Model.updateMethod(id, isName ? { name: inp.value } : { closingDay: inp.value });
+  const m = Model.methodById(id);
+  setErr('mn-' + id, 'mne-' + id, r.errors && r.errors.name);
+  setErr('mc-' + id, 'mce-' + id, r.errors && r.errors.closing);
+  if (!r.ok) return;
+  row.querySelector('[data-hint]').textContent = closingText(m);
+  inp.value = isName ? m.name : (m.closingDay || '');
+  toast(isName ? 'Renamed to ' + m.name : (m.closingDay ? m.name + ' closes on the ' + ordinal(m.closingDay) : m.name + ' now uses calendar months'));
+});
+$('#mList').addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('[data-field]')) { e.preventDefault(); e.target.blur(); } });
+$('#mList').addEventListener('click', function (e) {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const id = b.closest('.mrow').dataset.id, m = Model.methodById(id);
+  if (b.dataset.act === 'default') { Model.setDefault(id); toast(m.name + ' is now the default'); }
+  if (b.dataset.act === 'archive') {
+    const n = Model.countFor(id);
+    Modal.confirm({
+      title: 'Remove ' + m.name + '?',
+      message: 'It will no longer appear when you add expenses. ' + (n ? 'Its <strong>' + n + (n === 1 ? ' expense stays' : ' expenses stay') + '</strong> in your history and in the Summary.' : 'You can restore it later.'),
+      confirmLabel: 'Remove', danger: true,
+      onConfirm: function () { const r = Model.archiveMethod(id); if (r.ok) toast(m.name + ' removed'); else toast(r.error, 'error'); }
+    });
+  }
+});
+$('#archivedList').addEventListener('click', function (e) {
+  const b = e.target.closest('[data-act="restore"]'); if (!b) return;
+  const id = b.closest('li').dataset.id; Model.restoreMethod(id); toast(Model.methodById(id).name + ' restored');
+});
+$('#addMethodForm').addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  const r = Model.addMethod($('#sName').value, $('#sClose').value);
+  setErr('sName', 'eSName', r.errors && r.errors.name);
+  setErr('sClose', 'eSClose', r.errors && r.errors.closing);
+  if (!r.ok) return;
+  $('#sName').value = ''; $('#sClose').value = '';
+  toast(r.method.name + ' added');
+});
+$('#btnBackup').addEventListener('click', function () {
+  const ta = $('#bkText'); ta.value = JSON.stringify(data, null, 1); ta.focus(); ta.select();
+  $('#eBackup').textContent = '';
+  const done = function () { toast('Backup copied'); };
+  try { navigator.clipboard.writeText(ta.value).then(done, function () { toast('Backup is selected. Copy it with Ctrl+C or Cmd+C.'); }); }
+  catch (e) { toast('Backup is selected. Copy it with Ctrl+C or Cmd+C.'); }
+});
+$('#btnRestore').addEventListener('click', function () {
+  const text = $('#bkText').value.trim();
+  if (!text) { $('#eBackup').textContent = 'Paste a backup into the box first.'; return; }
+  const check = normalize((function () { try { return JSON.parse(text); } catch (e) { return null; } })());
+  if (!check) { $('#eBackup').textContent = 'That text is not a valid backup.'; return; }
+  $('#eBackup').textContent = '';
+  Modal.confirm({ title: 'Replace your data?', message: 'This replaces everything in this browser with the backup: <strong>' + check.expenses.length + ' expenses</strong> and ' + check.methods.length + ' payment methods.', confirmLabel: 'Restore backup', danger: true,
+    onConfirm: function () { const r = Model.replaceAll(text); if (r.ok) toast('Backup restored'); else $('#eBackup').textContent = r.error; } });
+});
+
+/* ---- storage warnings ---- */
+function renderStorageWarning(extra) {
+  const el = $('#storageWarn');
+  const msg = extra || (!Store.ok ? 'This browser is not allowing Daily Ledger to save data, so entries will be lost when you close the page. Use Copy backup in Settings to keep them.' : '');
+  el.textContent = msg; el.hidden = !msg;
+}
+
+/* ---- wiring ---- */
+let corruptNotice = '';
+listeners.push(function (type) {
+  renderMethodSelect();
+  renderLatest();
+  renderSummary();
+  if (type !== 'method-edit') renderSettings();
+  renderStorageWarning(corruptNotice);
+});
+
+window.addEventListener('storage', function (e) {
+  if (e.key !== KEY) return;
+  const l = Store.load();
+  if (l && !l.corrupt) { data = l; emit('reload'); }
+});
+
+/* ---- start ---- */
+(function init() {
+  const loaded = Store.load();
+  if (loaded && loaded.corrupt) {
+    corruptNotice = 'The saved data could not be read, so Daily Ledger started fresh. The unreadable data was kept under a separate key in this browser.';
+    data = defaults(); Store.save(data);
+  } else if (loaded) {
+    data = loaded;
+  } else {
+    data = defaults(); Store.save(data);
+  }
+  $('#fDate').value = DateLib.today();
+  renderMethodSelect();
+  $('#fMethod').value = Model.defaultMethod().id; updateMethodHint();
+  renderLatest(); renderSummary(); renderSettings(); renderStorageWarning(corruptNotice);
+  route();
+})();
+
+})();
+</script>
+
+</body></html>
